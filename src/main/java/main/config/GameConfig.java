@@ -135,6 +135,31 @@ public class GameConfig {
         );
     }
 
+    private AiPlayer createAiPlayer(
+            GameController controller,
+            Player player,
+            int depth
+    ) {
+
+        GameRequirementPort aiGameRequirement =
+                new AiGameRequirementAdapter(
+                        controller
+                );
+
+        BestMovePortAdapter ai =
+                new BestMovePortAdapter(
+                        aiGameRequirement,
+                        createAiMovePort(controller)
+                );
+
+        return new AiPlayer(
+                aiGameRequirement,
+                ai,
+                player,
+                depth
+        );
+    }
+
     /*
      * =========================================================
      * HUMAN VS AI
@@ -173,58 +198,9 @@ public class GameConfig {
                 humanMovePort
         );
 
-        /*
-         * AI -> Game
-         */
-        MoveSubmissionPort aiMovePort =
-                createAiMovePort(
-                        makeMovePort
-                );
-
-        /*
-         * AI -> Game queries.
-         */
-        GameRequirementPort aiGameRequirement =
-                new AiGameRequirementAdapter(
-                        controller
-                );
-
-        BestMovePortAdapter ai =
-                new BestMovePortAdapter(
-                        aiGameRequirement,
-                        aiMovePort
-                );
-
-        /*
-         * UI -> Game queries.
-         */
-        GameView_GameViewPort_Adapter gameView =
-                new GameView_GameViewPort_Adapter(
-                        controller
-                );
-
-        LegalsMovesRequirementPort_LegalsMovesProviderPort_Adapter legalMoves =
-                new LegalsMovesRequirementPort_LegalsMovesProviderPort_Adapter(
-                        controller
-                );
-
-        boardView.setGameRequirementPort(
-                gameView
-        );
-
-        boardView.setLegalMovesRequirementPort(
-                legalMoves
-        );
-
-        sideBar.setGameRequirementPort(
-                gameView
-        );
-
-        boardView.startGame();
-        sideBar.startTimer();
-
-        context.registerSingleton(
-                GameController.class,
+        wireBoard(
+                boardView,
+                sideBar,
                 controller
         );
 
@@ -237,14 +213,68 @@ public class GameConfig {
          * through its outbound move port.
          */
         AiPlayer aiPlayer =
-                new AiPlayer(
-                        aiGameRequirement,
-                        ai,
+                createAiPlayer(
+                        controller,
                         Player.BLACK,
                         depth
                 );
 
         aiPlayer.startGame();
+
+        return boardView;
+    }
+
+    /*
+     * =========================================================
+     * AI VS AI
+     * =========================================================
+     */
+
+    public BoardView setupAIVsAIGame(
+            BoardView boardView,
+            SideBar sideBar,
+            int depth
+    ) {
+
+        Game game =
+                new Game(Player.WHITE);
+
+        /*
+         * No human controls this board.
+         */
+        boardView.setHumanPlayer(null);
+
+        GameController controller =
+                createGameController(game);
+
+        wireBoard(
+                boardView,
+                sideBar,
+                controller
+        );
+
+        boardView.setEnabled(false);
+
+        /*
+         * Each AI gets its own search instance and its own
+         * stateful search tables. Both observe the same game.
+         */
+        AiPlayer whiteAi =
+                createAiPlayer(
+                        controller,
+                        Player.WHITE,
+                        depth
+                );
+
+        AiPlayer blackAi =
+                createAiPlayer(
+                        controller,
+                        Player.BLACK,
+                        depth
+                );
+
+        whiteAi.startGame();
+        blackAi.startGame();
 
         return boardView;
     }

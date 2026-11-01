@@ -37,7 +37,7 @@ public class GameApplication extends Application {
         switch (mode) {
         case AI -> gameConfig.setupAIGame(boardView, sideBar, depth);
         case OFFLINE -> gameConfig.setupOfflineGame(boardView, sideBar);
-        case AI_VS_AI -> System.out.println("");
+        case AI_VS_AI -> gameConfig.setupAIVsAIGame(boardView, sideBar, depth);
         case CLI -> System.out.println("");
 
         default -> {
