@@ -22,20 +22,20 @@ public class GameApplication extends Application {
         context = new ApplicationContext();
         gameConfig = new GameConfig(context);
 
-        GameModeSelectionView selectionView = new GameModeSelectionView(mode -> {
-            startGameWithMode(mode);
+        GameModeSelectionView selectionView = new GameModeSelectionView((mode, depth) -> {
+            startGameWithMode(mode, depth);
         });
 
         mainWindow = new MainWindow(stage, selectionView);
         mainWindow.showModeSelection();
     }
 
-    private void startGameWithMode(GameMode mode) {
+    private void startGameWithMode(GameMode mode, int depth) {
         BoardView boardView = new BoardView();
         SideBar sideBar = new SideBar(() -> mainWindow.showModeSelection());
 
         switch (mode) {
-        case AI -> gameConfig.setupAIGame(boardView, sideBar);
+        case AI -> gameConfig.setupAIGame(boardView, sideBar, depth);
         case OFFLINE -> gameConfig.setupOfflineGame(boardView, sideBar);
         case AI_VS_AI -> System.out.println("");
         case CLI -> System.out.println("");

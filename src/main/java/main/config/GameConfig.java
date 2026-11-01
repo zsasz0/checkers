@@ -143,7 +143,8 @@ public class GameConfig {
 
     public BoardView setupAIGame(
             BoardView boardView,
-            SideBar sideBar
+            SideBar sideBar,
+            int depth
     ) {
 
         Game game =
@@ -240,7 +241,7 @@ public class GameConfig {
                         aiGameRequirement,
                         ai,
                         Player.BLACK,
-                        12
+                        depth
                 );
 
         aiPlayer.startGame();

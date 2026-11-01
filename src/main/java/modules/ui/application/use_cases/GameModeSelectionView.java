@@ -2,22 +2,27 @@ package modules.ui.application.use_cases;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import modules.game.domain.GameMode;
 
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 public class GameModeSelectionView extends VBox {
 
+    private static final int MIN_AI_DEPTH = 1;
+    private static final int MAX_AI_DEPTH = 20;
+    private static final int DEFAULT_AI_DEPTH = 12;
+
     private final ToggleGroup toggleGroup = new ToggleGroup();
 
-    @SuppressWarnings("unused")
-    private final Consumer<GameMode> onStart;
+    private final BiConsumer<GameMode, Integer> onStart;
 
-    public GameModeSelectionView(Consumer<GameMode> onStart) {
+    public GameModeSelectionView(BiConsumer<GameMode, Integer> onStart) {
         this.onStart = onStart;
 
         setPrefWidth(220);
@@ -48,6 +53,24 @@ public class GameModeSelectionView extends VBox {
         addModeOption("Challenge", GameMode.CHALLENGE);
         addModeOption("AI vs AI", GameMode.AI_VS_AI);
 
+        Label depthLabel = new Label("AI Depth");
+        depthLabel.setStyle(
+                "-fx-text-fill: white;" +
+                "-fx-font-size: 16px;"
+        );
+
+        ComboBox<Integer> depthBox = new ComboBox<>();
+        for (int depth = MIN_AI_DEPTH; depth <= MAX_AI_DEPTH; depth++) {
+            depthBox.getItems().add(depth);
+        }
+        depthBox.setValue(DEFAULT_AI_DEPTH);
+        depthBox.setPrefWidth(80);
+
+        HBox depthRow = new HBox(10, depthLabel, depthBox);
+        depthRow.setAlignment(Pos.CENTER);
+
+        getChildren().add(depthRow);
+
         Button startButton = new Button("Start Game");
 
         startButton.setStyle(
@@ -65,7 +88,9 @@ public class GameModeSelectionView extends VBox {
                 GameMode mode =
                         (GameMode) selected.getUserData();
 
-                onStart.accept(mode);
+                int depth = depthBox.getValue();
+
+                onStart.accept(mode, depth);
             }
         });
 
