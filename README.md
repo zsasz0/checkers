@@ -32,7 +32,7 @@ The project is designed as a showcase of **software engineering best practices**
 
 ### 🧠 Dual AI System
 - **Minimax Engine (Java)** — Classical game-tree search with alpha-beta pruning, iterative deepening, killer move heuristic, history heuristic, PV table, and configurable evaluation function
-- **Neural Network (Python/PyTorch)** — ResNet-style convolutional network with dual policy + value heads, trained via supervised learning from the Minimax teacher
+- **Neural Network (Python/PyTorch)** — 🚧 **Under development, not working yet.** ResNet-style convolutional network with dual policy + value heads, trained via supervised learning from the Minimax teacher
 
 ### 🎯 Game Rules
 - **Spanish/Tunisian Draughts** rules with mandatory maximum captures
@@ -168,6 +168,8 @@ All evaluation weights are **fully configurable** at runtime through setter meth
 
 ### Neural Network (Python/PyTorch)
 
+> 🚧 **Under development — not working yet.**
+
 The Python AI module implements a **Residual Convolutional Neural Network** inspired by AlphaGo/AlphaZero's architecture:
 
 #### Network Architecture
@@ -225,94 +227,6 @@ Java (GameConfig) ──JSON──→ stdin ──→ Python (ai.py)
 ```
 
 This design avoids the overhead of spawning a new process per move and keeps the model loaded in GPU/CPU memory.
-
----
-
-## 📦 Project Structure
-
-```
-checkerv3/
-├── pom.xml                              # Maven build (Java 17 + JavaFX 21 + JUnit 5)
-├── README.md
-│
-├── src/main/java/
-│   ├── main/
-│   │   ├── App.java                     # Entry point
-│   │   ├── GameApplication.java         # JavaFX Application lifecycle
-│   │   └── config/
-│   │       ├── ApplicationContext.java   # Lightweight IoC container
-│   │       └── GameConfig.java           # Composition root — wires all modules
-│   │
-│   └── modules/
-│       ├── game/                         # 🎯 GAME HEXAGON (Core Domain)
-│       │   ├── domain/                   # Pure domain models
-│       │   │   ├── Board.java            # 8×8 board with piece placement
-│       │   │   ├── Game.java             # Game state, history, draw tracking
-│       │   │   ├── Move.java             # Immutable move with path & captures
-│       │   │   ├── Piece.java            # Immutable piece (player + type)
-│       │   │   ├── PieceType.java        # MAN | KING
-│       │   │   ├── Player.java           # WHITE | BLACK
-│       │   │   ├── Position.java         # (row, column) value object
-│       │   │   ├── GameMode.java         # AI | OFFLINE | ONLINE | ...
-│       │   │   ├── GameState.java        # Game state snapshot
-│       │   │   └── GameStatus.java       # IN_PROGRESS | WHITE_WON | BLACK_WON | DRAW
-│       │   ├── application/use_cases/
-│       │   │   ├── GameController.java   # Orchestrates moves and rules
-│       │   │   └── rules/
-│       │   │       ├── CheckersRules.java                    # Rule engine
-│       │   │       └── utils/
-│       │   │           ├── CaptureStrategy.java              # Strategy interface
-│       │   │           └── SpanishTunisianCaptureStrategy.java # Concrete strategy
-│       │   ├── in_ports/                 # Inbound ports (how others call the game)
-│       │   │   ├── MakeMovePort.java
-│       │   │   ├── GameProviderPort.java
-│       │   │   └── LegalsMovesProviderPort.java
-│       │   └── out_ports/                # (Reserved for future outbound events)
-│       │
-│       ├── ai/                           # 🧠 AI HEXAGON
-│       │   ├── application/use_cases/
-│       │   │   ├── AiPlayer.java         # Self-driving player (polls GameRequirementPort)
-│       │   │   └── modules/
-│       │   │       ├── Search.java       # Negamax with alpha-beta & iterative deepening
-│       │   │       ├── Evaluation.java   # Configurable static evaluation
-│       │   │       ├── MoveOrdering.java # PV + killers + history sorting
-│       │   │       ├── BoardSimulator.java # Make/undo moves for search
-│       │   │       └── BestMovePortAdapter.java # Entry point adapter
-│       │   └── out_ports/
-│       │       ├── GameRequirementPort.java  # How the AI reads the game state
-│       │       └── MoveSubmissionPort.java # How the AI submits its chosen move
-│       │
-│       ├── ui/                           # 🖥️ UI HEXAGON
-│       │   ├── application/use_cases/
-│       │   │   ├── BoardView.java        # Interactive JavaFX board (760 lines)
-│       │   │   ├── SideBar.java          # Status, timers, captured pieces
-│       │   │   ├── MainWindow.java       # Window management & scene switching
-│       │   │   └── GameModeSelectionView.java # Mode selection screen
-│       │   └── out_ports/
-│       │       ├── GameRequirementPort.java
-│       │       ├── HumanMoveSubmissionPort.java
-│       │       └── LegalsMovesRequirementPort.java
-│       │
-│       ├── integration/                  # 🔌 INTEGRATION ADAPTERS
-│       │   └── infrastructure/adapters/
-│       │       ├── AiMoveSubmissionAdapter.java
-│       │       ├── AiGameRequirementAdapter.java
-│       │       ├── HumanMoveAdapter.java
-│       │       ├── GameView_GameViewPort_Adapter.java
-│       │       └── LegalsMovesRequirementPort_LegalsMovesProviderPort_Adapter.java
-│       │
-│       └── PythonAI/                     # 🐍 PYTHON BRIDGE
-│           └── PythonAI.java             # Subprocess manager with JSON I/O
-│
-├── CheckersRn/                           # 🤖 NEURAL NETWORK MODULE (Python)
-│   ├── ai.py                             # Network definition + online training loop
-│   ├── train.py                          # Offline batch training script
-│   ├── test.py                           # Integration test for Python AI
-│   ├── dataset.json                      # Training dataset
-│   └── models/                           # Saved model weights (.pt files)
-│
-└── src/test/java/                        # 🧪 Unit tests (JUnit 5)
-```
 
 ---
 
@@ -424,7 +338,7 @@ python train.py
 | **UI (Mode Selection)** | Java | ✅ Active | ~96 |
 | **Integration Adapters** | Java | ✅ Active | ~100 |
 | **Config / IoC** | Java | ✅ Active | ~350 |
-| **Neural Network** | Python | ✅ Active | ~675 |
+| **Neural Network** | Python | 🚧 Under development | ~675 |
 | **Offline Trainer** | Python | ✅ Active | ~131 |
 | **Python Bridge** | Java | ✅ Active | ~62 |
 
