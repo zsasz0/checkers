@@ -322,44 +322,6 @@ python train.py
 
 ---
 
-## 📊 Active Modules
-
-| Module | Language | Status | Lines of Code |
-|--------|----------|--------|---------------|
-| **Game Domain** | Java | ✅ Active | ~500 |
-| **Checkers Rules** | Java | ✅ Active | ~620 |
-| **AI Search (Minimax)** | Java | ✅ Active | ~490 |
-| **AI Evaluation** | Java | ✅ Active | ~323 |
-| **AI Move Ordering** | Java | ✅ Active | ~208 |
-| **AI Board Simulator** | Java | ✅ Active | ~117 |
-| **UI (BoardView)** | Java | ✅ Active | ~760 |
-| **UI (SideBar)** | Java | ✅ Active | ~340 |
-| **UI (MainWindow)** | Java | ✅ Active | ~67 |
-| **UI (Mode Selection)** | Java | ✅ Active | ~96 |
-| **Integration Adapters** | Java | ✅ Active | ~100 |
-| **Config / IoC** | Java | ✅ Active | ~350 |
-| **Neural Network** | Python | 🚧 Under development | ~675 |
-| **Offline Trainer** | Python | ✅ Active | ~131 |
-| **Python Bridge** | Java | ✅ Active | ~62 |
-
-**Total: ~4,800+ lines across 39 Java files and 4 Python files**
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technology |
-|-------|------------|
-| **Language** | Java 17, Python 3 |
-| **Build** | Maven 3 |
-| **UI Framework** | JavaFX 21 |
-| **AI Framework** | PyTorch |
-| **Testing** | JUnit 5 |
-| **Serialization** | Jackson (JSON) |
-| **Architecture** | Hexagonal (Ports & Adapters) |
-
----
-
 ## 📄 License
 
 This project is developed as an academic/personal project.
