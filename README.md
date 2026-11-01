@@ -16,6 +16,8 @@
 
 The project is designed as a showcase of **software engineering best practices**: clean architecture, design patterns, separation of concerns, and a hybrid AI approach that combines the strategic depth of classical game-tree search with the pattern recognition capabilities of deep learning.
 
+It is also a personal practice project — a single place to apply and consolidate knowledge learned across several domains, from software architecture and Java/JavaFX to classical AI search, Python/PyTorch, testing, and build tooling.
+
 ---
 
 ## ✨ Features
