@@ -57,7 +57,7 @@ The project is designed as a showcase of **software engineering best practices**
 
 The project follows a **Modular Hexagonal Architecture**. Rather than a single monolith, the system is split into independent, autonomous modules (`Game`, `AI`, `UI`), where **each module itself is a Hexagon**. 
 
-![Ports-and-adapters architecture diagram](architecture.png)
+![Ports-and-adapters architecture diagram](image.png)
     
 Inside every module, you will find a strict separation of concerns:
 - **Domain:** Pure business rules and entities
