@@ -1,6 +1,8 @@
 package main.config;
 
+import modules.ai.application.use_cases.AiPlayer;
 import modules.ai.application.use_cases.modules.BestMovePortAdapter;
+import modules.ai.out_ports.GameRequirementPort;
 import modules.ai.out_ports.MoveSubmissionPort;
 
 import modules.game.application.use_cases.GameController;
@@ -8,10 +10,10 @@ import modules.game.application.use_cases.rules.CheckersRules;
 import modules.game.application.use_cases.rules.utils.CaptureStrategy;
 import modules.game.application.use_cases.rules.utils.SpanishTunisianCaptureStrategy;
 import modules.game.domain.Game;
-import modules.game.domain.GameStatus;
 import modules.game.domain.Player;
 import modules.game.in_ports.MakeMovePort;
 
+import modules.integration.infrastructure.adapters.AiGameRequirementAdapter;
 import modules.integration.infrastructure.adapters.AiMoveSubmissionAdapter;
 import modules.integration.infrastructure.adapters.GameView_GameViewPort_Adapter;
 import modules.integration.infrastructure.adapters.LegalsMovesRequirementPort_LegalsMovesProviderPort_Adapter;
@@ -178,8 +180,17 @@ public class GameConfig {
                         makeMovePort
                 );
 
+        /*
+         * AI -> Game queries.
+         */
+        GameRequirementPort aiGameRequirement =
+                new AiGameRequirementAdapter(
+                        controller
+                );
+
         BestMovePortAdapter ai =
                 new BestMovePortAdapter(
+                        aiGameRequirement,
                         aiMovePort
                 );
 
@@ -220,45 +231,19 @@ public class GameConfig {
          * AI owns BLACK.
          *
          * The game does NOT ask the AI for a move.
-         * The AI watches for its turn, calculates a move,
-         * and submits it through its outbound port.
+         * The AI watches the game through its own outbound
+         * context port, calculates a move, and submits it
+         * through its outbound move port.
          */
-        Thread aiThread =
-                new Thread(() -> {
+        AiPlayer aiPlayer =
+                new AiPlayer(
+                        aiGameRequirement,
+                        ai,
+                        Player.BLACK,
+                        12
+                );
 
-                    while (
-                            game.status()
-                                    == GameStatus.IN_PROGRESS
-                    ) {
-
-                        if (game.currentPlayer()
-                                == Player.BLACK) {
-
-                            ai.execute(
-                                    game,
-                                    Player.BLACK,
-                                    12
-                            );
-                        }
-
-                        try {
-
-                            Thread.sleep(20);
-
-                        } catch (InterruptedException e) {
-
-                            Thread.currentThread()
-                                    .interrupt();
-
-                            return;
-                        }
-                    }
-                });
-
-        aiThread.setDaemon(true);
-        aiThread.setName("Checkers-AI");
-
-        aiThread.start();
+        aiPlayer.startGame();
 
         return boardView;
     }

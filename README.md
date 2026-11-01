@@ -84,7 +84,7 @@ flowchart TD
     subgraph AI ["🧠 AI Module (Hexagon)"]
         direction TB
         aiApp["Application<br/>(Minimax, Eval)"]:::app
-        aiOut["Out-Ports<br/>(MoveSubmission)"]:::port
+        aiOut["Out-Ports<br/>(GameRequirement, MoveSubmission)"]:::port
         aiApp --> aiOut
     end
     AI:::moduleHex
@@ -114,7 +114,7 @@ flowchart TD
 | Benefit | How it's achieved |
 |---------|-------------------|
 | **Full Encapsulation** | Every module has its own domain and application layer, exposing only what is strictly necessary through ports. |
-| **Swappable AI** | The AI communicates through `MoveSubmissionPort` — swap Minimax for a neural net, MCTS, or a remote API without touching game logic. |
+| **Swappable AI** | The AI communicates through `GameRequirementPort` (reads) and `MoveSubmissionPort` (writes) — swap Minimax for a neural net, MCTS, or a remote API without touching game logic. |
 | **Swappable UI** | The UI communicates through its requirement ports — replace JavaFX with a web UI or CLI without changing the game. |
 | **Module Independence** | The integration layer wires the modules together at the top level. The Game, AI, and UI modules never import each other directly. |
 
@@ -147,6 +147,7 @@ public interface CaptureStrategy {
 ### 2. Adapter Pattern
 All module boundaries are crossed through **Adapter** classes that translate between ports:
 - `AiMoveSubmissionAdapter` — adapts AI's `MoveSubmissionPort` → Game's `MakeMovePort`
+- `AiGameRequirementAdapter` — adapts AI's `GameRequirementPort` → Game's `GameProviderPort`
 - `HumanMoveAdapter` — adapts UI's `HumanMoveSubmissionPort` → Game's `MakeMovePort`
 - `GameView_GameViewPort_Adapter` — adapts UI's `GameRequirementPort` → Game's `GameProviderPort`
 - `LegalsMovesRequirementPort_LegalsMovesProviderPort_Adapter` — adapts UI's legal moves query → Game's legal moves provider
@@ -160,7 +161,7 @@ The `ApplicationContext` class is a **lightweight IoC container** supporting:
 `GameConfig` acts as the **composition root**, wiring all dependencies together.
 
 ### 4. Observer Pattern (Polling Variant)
-The `BoardView` uses a **polling observer** via JavaFX `Timeline` to detect game state changes every 100ms. This cleanly decouples the UI from the game loop — the UI never needs to be directly notified by the AI thread.
+The `BoardView` and the `AiPlayer` use a **polling observer** — a JavaFX `Timeline` (UI) and a daemon thread (AI) — to detect game state changes every 20–100ms. This cleanly decouples both modules from the game loop: the UI never needs to be directly notified by the AI thread, and the AI is never told when to move — it watches the game through its own `GameRequirementPort`.
 
 ### 5. Immutable Value Objects
 Domain objects like `Position`, `Move`, `Piece`, `Player`, and `PieceType` are **immutable value objects**:
@@ -313,13 +314,16 @@ checkerv3/
 │       │   └── out_ports/                # (Reserved for future outbound events)
 │       │
 │       ├── ai/                           # 🧠 AI HEXAGON
-│       │   ├── application/use_cases/modules/
-│       │   │   ├── Search.java           # Negamax with alpha-beta & iterative deepening
-│       │   │   ├── Evaluation.java       # Configurable static evaluation
-│       │   │   ├── MoveOrdering.java     # PV + killers + history sorting
-│       │   │   ├── BoardSimulator.java   # Make/undo moves for search
-│       │   │   └── BestMovePortAdapter.java # Entry point adapter
+│       │   ├── application/use_cases/
+│       │   │   ├── AiPlayer.java         # Self-driving player (polls GameRequirementPort)
+│       │   │   └── modules/
+│       │   │       ├── Search.java       # Negamax with alpha-beta & iterative deepening
+│       │   │       ├── Evaluation.java   # Configurable static evaluation
+│       │   │       ├── MoveOrdering.java # PV + killers + history sorting
+│       │   │       ├── BoardSimulator.java # Make/undo moves for search
+│       │   │       └── BestMovePortAdapter.java # Entry point adapter
 │       │   └── out_ports/
+│       │       ├── GameRequirementPort.java  # How the AI reads the game state
 │       │       └── MoveSubmissionPort.java # How the AI submits its chosen move
 │       │
 │       ├── ui/                           # 🖥️ UI HEXAGON
@@ -336,6 +340,7 @@ checkerv3/
 │       ├── integration/                  # 🔌 INTEGRATION ADAPTERS
 │       │   └── infrastructure/adapters/
 │       │       ├── AiMoveSubmissionAdapter.java
+│       │       ├── AiGameRequirementAdapter.java
 │       │       ├── HumanMoveAdapter.java
 │       │       ├── GameView_GameViewPort_Adapter.java
 │       │       └── LegalsMovesRequirementPort_LegalsMovesProviderPort_Adapter.java
